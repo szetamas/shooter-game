@@ -1,0 +1,37 @@
+body {
+  background-color: #000000;
+  color: #00ff00;
+  margin: 0px;
+  padding: 0px;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+#gameFieldContainer {
+  margin: 0px;
+  padding: 0px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#gameField {
+  display: block;
+  image-rendering: pixelated;
+  border: 1px solid #000000;
+  margin: 0px;
+  padding: 0px;
+}
+
+.crosshairReady {
+  cursor: url('gui_src/crosshairReady.png') 30 30, pointer;
+}
+
+.crosshairNotReady {
+  cursor: url('gui_src/crosshairNotReady.png') 30 30, pointer;
+}
+
+#error {
+  text-align: center;
+}
