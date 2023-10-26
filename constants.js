@@ -1,12 +1,13 @@
-const VERSION = '0.7.0.0';
+const VERSION = '0.7.1.0';
 const SOUND_DEFAULT_VOLUME = 0.0;
+const MUSIC_DEFAULT_VOLUME = 0.0;
 //have to less than 0.5
 const SOUND_MAX_VOLUME = 0.3;
+const MUSIC_MAX_VOLUME = 0.3;
 const MUSICS = [
   (MUSIC01 = {
     NAME: 'music01',
     MUSIC_START_TIME: 9166,
-    MUSIC_DEFAULT_VOLUME: 0.0,
     MUSIC_MAX_VOLUME: 0.3,
   }),
 ];
