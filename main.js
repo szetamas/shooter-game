@@ -11,6 +11,9 @@ window.addEventListener('load', () => {
     soundManager.loadSound(HOLSTER_SOUND);
     soundManager.loadSound(HEADSHOT_SOUND);
     soundManager.loadSound(SERIOUS_DAMAGE_SOUND);
+    for (let i = 0; i < HEART_BEATS_STEPS.length; i++) {
+      soundManager.loadSound('heartbeat' + i);
+    }
     for (let i = 0; i < DIE_SOUNDS.length; i++) {
       soundManager.loadSound(DIE_SOUNDS[i]);
     }

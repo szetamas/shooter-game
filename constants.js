@@ -26,6 +26,7 @@ const CONTROLS = [
   'Shoot: Left Click',
   'Reload: R, Wheel Click',
   'Change Gun: Q, 1-2, Wheel Scrolling',
+  'Use Adrenaline: E',
 ];
 const TEXT_WIN = "You're winner";
 const TEXT_LOSE = "You're loser";
@@ -51,6 +52,11 @@ const PLAYER_ARMOR_HEIGHT = 192 / 3.5;
 const ARMOR_HP = 25;
 //armor hp has to multiple with level
 const PLAYER_STARTER_ARMOR = { HP: ARMOR_HP * 2, LEVEL: 2 };
+const PLAYER_ADRENEALINES = 1;
+const PLAYER_MAX_ADRENEALINES = 3;
+const ADRENEALINE_WIDTH = 76 / 3.3;
+const ADRENEALINE_HEIGHT = 200 / 3.3;
+const HEART_BEATS_STEPS = [1.4, 1.2, 1];
 
 const HOLSTER_TIME = 500;
 const HOLSTER_SOUND = 'holsterSound';

@@ -42,7 +42,6 @@ class GamePlay {
 
     this.gameRuningInterval = null;
     this.enemyAttackTimeout = null;
-    this.playerReloadInterval = null;
     this.bloods = [];
     this.alreadyToldBleeding = false;
     this.startGamePlay();
@@ -73,13 +72,15 @@ class GamePlay {
         this.player.guns[this.player.usedGun].startReload(
           this.soundManager,
           this.soundVolume,
-          this.player.usedGun
+          this.player.usedGun,
+          this.player.adrenalineEffect
         );
       } else {
         this.player.guns[this.player.usedGun].reload(
           this.soundManager,
           this.soundVolume,
-          this.player.usedGun
+          this.player.usedGun,
+          this.player.adrenalineEffect
         );
       }
     }
@@ -191,8 +192,9 @@ class GamePlay {
         this.enemies[enemyIndex].runTo(
           randomX,
           this.enemyPlaces[actualPlace].y,
-          Math.floor(Math.random() * ENEMIES[this.level].RUN_RNG_SPEED) +
-            ENEMIES[this.level].RUN_MIN_SPEED
+          Math.random() * ENEMIES[this.level].RUN_RNG_SPEED +
+            ENEMIES[this.level].RUN_MIN_SPEED,
+          this.player
         );
         this.remainEnemiesOnMap--;
       }
@@ -211,7 +213,7 @@ class GamePlay {
       );
       this.enemyAttackTimeout = window.setTimeout(() => {
         this.enemiesAttack();
-      }, randomDelay + MAPS[this.map].ATTACK_DELAY);
+      }, (randomDelay + MAPS[this.map].ATTACK_DELAY) * this.player.adrenalineEffect);
     }
   }
 
@@ -253,7 +255,10 @@ class GamePlay {
           if (this.soundVolume > 0.0) {
             this.soundManager.playSound(
               SERIOUS_DAMAGE_SOUND,
-              this.soundVolume + 0.2
+              (this.soundVolume + 0.2) /
+                (this.player.adrenalineEffect * this.player.adrenalineEffect),
+              false,
+              this.player.adrenalineEffect
             );
           }
           this.alreadyToldBleeding = true;
@@ -283,7 +288,8 @@ class GamePlay {
       window.setTimeout(() => {
         this.soundManager.playSound(
           MUSICS[this.music].NAME,
-          this.musicVolume,
+          this.musicVolume /
+            (this.player.adrenalineEffect * this.player.adrenalineEffect),
           true
         );
       }, MUSICS[this.music].MUSIC_START_TIME);
@@ -302,6 +308,7 @@ class GamePlay {
       new Player(
         PLAYER_HP,
         PLAYER_BLEEDING_RATE,
+        PLAYER_ADRENEALINES,
         { hp: PLAYER_STARTER_ARMOR.HP, level: PLAYER_STARTER_ARMOR.LEVEL },
         [
           new PlayerGun(
@@ -352,7 +359,8 @@ class GamePlay {
       this.player.guns[this.player.usedGun].breakReload(
         this.soundManager,
         this.soundVolume,
-        this.player.usedGun
+        this.player.usedGun,
+        this.player.adrenalineEffect
       );
     }
     this.soundManager.stopAllSounds();
@@ -360,6 +368,7 @@ class GamePlay {
       const whichDie = Math.floor(Math.random() * 2);
       this.soundManager.playSound(DIE_SOUNDS[whichDie], this.soundVolume + 0.2);
     }
+    this.player.endAdrenaline();
     window.clearTimeout(this.enemyAttackTimeout);
     window.clearInterval(this.gameRuningInterval);
     window.clearInterval(this.speedRuningInterval);
