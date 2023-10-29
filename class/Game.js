@@ -107,19 +107,27 @@ class Game {
   }
 
   handleKeyDown(event) {
-    if (this.gamePlay !== null) {
+    if (this.gamePlay !== null && this.gamePlay.player !== null) {
       switch (event.key) {
-        case 'r':
-          this.gamePlay.playerReload();
-          break;
-        case 'q':
-          this.gamePlay.tryChangeWeapon();
-          break;
         case '1':
           this.gamePlay.tryChangeWeapon(0);
           break;
         case '2':
           this.gamePlay.tryChangeWeapon(1);
+          break;
+        case 'q':
+          this.gamePlay.tryChangeWeapon();
+          break;
+        case 'e':
+          this.gamePlay.player.useAdrenaline(
+            this.soundManager,
+            this.soundVolume,
+            MUSICS[this.gamePlay.music].NAME,
+            this.gamePlay.musicVolume
+          );
+          break;
+        case 'r':
+          this.gamePlay.playerReload();
           break;
       }
     }

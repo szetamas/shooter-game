@@ -37,7 +37,10 @@ class Enemy extends Character {
   }
   //TODO: reload is missing
   shoot(soundManager, soundVolume, drawer, player) {
-    const bulletPower = this.guns[this.usedGun].gunShoot(this.lame);
+    const bulletPower = this.guns[this.usedGun].gunShoot(
+      this.lame,
+      player.adrenalineEffect
+    );
     if (bulletPower !== -1) {
       this.id = this.id + 'shoot';
       window.setTimeout(() => {
@@ -47,9 +50,12 @@ class Enemy extends Character {
         }
       }, 100);
       if (soundVolume > 0.0) {
+        const timeModifier = 2 - player.adrenalineEffect;
         soundManager.playSound(
           ENEMIES[this.level].GUNS[this.usedGun].SHOOT_SOUND,
-          soundVolume
+          soundVolume / (player.adrenalineEffect * player.adrenalineEffect),
+          false,
+          timeModifier
         );
       }
       //CHANCE AND DISTANCE MODIFYING WITH ACCURACY, MOSTLY BALANCED
@@ -104,42 +110,43 @@ class Enemy extends Character {
   }
 
   moveLeft(x) {
-    this.posX -= x;
+    this.posX -= Math.floor(x);
   }
 
   moveRight(x) {
-    this.posX += x;
+    this.posX += Math.floor(x);
   }
 
   moveUp(y) {
-    this.posY -= y;
+    this.posY -= Math.floor(y);
   }
 
   moveDown(y) {
-    this.posY += y;
+    this.posY += Math.floor(y);
   }
 
-  runTo(toX, toY, speed) {
+  runTo(toX, toY, speed, player) {
+    //i could not make division here, because then make the division everytime
     let again = false;
     if (this.posX < toX) {
-      this.moveRight(speed);
+      this.moveRight(speed / player.adrenalineEffect);
       if (this.posX < toX) {
         again = true;
       }
     } else if (this.posX > toX) {
-      this.moveLeft(speed);
+      this.moveLeft(speed / player.adrenalineEffect);
       if (this.posX > toX) {
         again = true;
       }
     }
 
     if (this.posY < toY) {
-      this.moveDown(speed);
+      this.moveDown(speed / player.adrenalineEffect);
       if (this.posY < toY) {
         again = true;
       }
     } else if (this.posY > toY) {
-      this.moveUp(speed);
+      this.moveUp(speed / player.adrenalineEffect);
       if (this.posY > toY) {
         again = true;
       }
@@ -147,7 +154,7 @@ class Enemy extends Character {
     this.movingCounter++;
     if (again && this.dyingPhase === 0) {
       //this moving counter need, because i want movingphase changing only every x "steps"
-      if (this.movingCounter > 20 / speed) {
+      if (this.movingCounter > 20 / (speed / player.adrenalineEffect)) {
         if (this.movePhase < this.totalMovePhase && this.increasingMovePhase) {
           this.movePhase++;
         } else if (this.movePhase > 1) {
@@ -172,7 +179,7 @@ class Enemy extends Character {
         this.movingCounter = 0;
       }
       window.setTimeout(() => {
-        this.runTo(toX, toY, speed);
+        this.runTo(toX, toY, speed, player);
       }, 50);
     } else if (this.dyingPhase === 0) {
       this.movePhase = 0;

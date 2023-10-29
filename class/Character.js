@@ -38,7 +38,13 @@ class Character {
     return damageModifier;
   }
 
-  looseHp(damage, bleeding = false, bodyPart = null) {
+  looseHp(originalDamage, bleeding = false, bodyPart = null) {
+    let damage;
+    if (this instanceof Player) {
+      damage = originalDamage / this.adrenalineEffect;
+    } else {
+      damage = originalDamage;
+    }
     let loosedHp;
     if (bodyPart === null) {
       //enemy bleeding, user got bullet and user bleeding
@@ -82,7 +88,11 @@ class Character {
   }
 
   looseBlood() {
-    this.looseHp(this.seriousDamages, true);
+    if (this instanceof Player) {
+      this.looseHp(this.seriousDamages / this.adrenalineEffect, true);
+    } else {
+      this.looseHp(this.seriousDamages, true);
+    }
   }
 
   die() {

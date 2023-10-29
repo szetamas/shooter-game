@@ -1,15 +1,89 @@
 class Player extends Character {
-  constructor(hp, bleedingRate, armor, guns) {
+  constructor(hp, bleedingRate, adrenalines, armor, guns) {
     super(hp, bleedingRate, armor, guns);
     this.weaponChanged = false;
     this.tryChangeWeaponInterval = null;
     this.triedChangeWeapon = 0;
+    this.adrenalines =
+      adrenalines > PLAYER_MAX_ADRENEALINES
+        ? PLAYER_MAX_ADRENEALINES
+        : adrenalines;
+    this.adrenalineTimeout = null;
+    //adrenalineEffect is a multiplier 1-2
+    this.adrenalineEffect = 1;
   }
 
   die() {
     this.died = true;
     this.hp = 0;
     this.guns[this.usedGun].readyToShoot = false;
+  }
+
+  useAdrenaline(soundManager, soundVolume, musicName, musicVolume) {
+    if (this.adrenalines > 0 && this.adrenalineEffect === 1) {
+      this.adrenalines--;
+      this.adrenalineTimeout = window.setTimeout(() => {
+        this.adrenalineEffect = 1.6;
+        this.hp += (this.hp / 100) * 20;
+        if (this.hp > 100) {
+          this.hp = 100;
+        }
+        this.seriousDamages = this.seriousDamages / 2;
+        this.reducingAdrenaline(
+          soundManager,
+          soundVolume,
+          musicName,
+          musicVolume
+        );
+      }, 1000);
+    }
+  }
+
+  reducingAdrenaline(soundManager, soundVolume, musicName, musicVolume) {
+    if (musicVolume > 0.0) {
+      //need the starter music too, if someone is not already played
+      //then the sound manager 'if' wont be true
+      soundManager.modifySound(
+        musicName + 'start',
+        musicVolume / (this.adrenalineEffect * this.adrenalineEffect)
+      );
+      soundManager.modifySound(
+        musicName,
+        musicVolume / (this.adrenalineEffect * this.adrenalineEffect)
+      );
+    }
+    if (soundVolume > 0.0) {
+      let heartbeatId;
+      for (let i = 0; i < HEART_BEATS_STEPS.length; i++) {
+        if (this.adrenalineEffect > HEART_BEATS_STEPS[i]) {
+          heartbeatId = 'heartbeat' + i;
+          break;
+        }
+      }
+      soundManager.playSound(
+        heartbeatId,
+        soundVolume * (this.adrenalineEffect * this.adrenalineEffect)
+      );
+    }
+
+    this.adrenalineTimeout = window.setTimeout(() => {
+      this.adrenalineEffect -= 0.01;
+      if (this.adrenalineEffect < 1) {
+        this.endAdrenaline();
+      } else {
+        this.reducingAdrenaline(
+          soundManager,
+          soundVolume,
+          musicName,
+          musicVolume
+        );
+      }
+    }, 600 / this.adrenalineEffect);
+  }
+
+  endAdrenaline() {
+    clearTimeout(this.adrenalineTimeout);
+    this.adrenalineEffect = 1;
   }
 
   tryChangeWeapon(soundManager, volume, changeTo) {
@@ -47,7 +121,12 @@ class Player extends Character {
     this.weaponChanged = true;
     if (soundManager) {
       if (volume > 0.0) {
-        soundManager.playSound(HOLSTER_SOUND, volume + 0.6);
+        soundManager.playSound(
+          HOLSTER_SOUND,
+          (volume + 0.6) / (this.adrenalineEffect * this.adrenalineEffect),
+          false,
+          this.adrenalineEffect
+        );
       }
     }
     window.setTimeout(() => {
@@ -56,18 +135,23 @@ class Player extends Character {
       //this timing, need because i dont want change twice
       window.setTimeout(() => {
         this.weaponChanged = false;
-      }, HOLSTER_TIME);
-    }, HOLSTER_TIME);
+      }, HOLSTER_TIME / this.adrenalineEffect);
+    }, HOLSTER_TIME / this.adrenalineEffect);
   }
 
   shoot(soundManager, soundVolume, drawer, mouse, enemies) {
-    const bulletPower = this.guns[this.usedGun].gunShoot();
+    const bulletPower = this.guns[this.usedGun].gunShoot(
+      1,
+      this.adrenalineEffect
+    );
     if (bulletPower !== -1) {
       if (soundVolume > 0.0) {
         soundManager.playSound(
           PLAYER_GUNS[this.usedGun].ID +
             PLAYER_GUNS[this.usedGun].SOUND_TYPES['shoot'],
-          soundVolume
+          soundVolume / (this.adrenalineEffect * this.adrenalineEffect),
+          false,
+          this.adrenalineEffect
         );
       }
       for (let i = 0; i < enemies.length; i++) {
@@ -108,7 +192,11 @@ class Player extends Character {
                   ENEMIES[enemies[i].type].HEAD_FROM_EDGE
             ) {
               if (soundVolume > 0) {
-                soundManager.playSound(HEADSHOT_SOUND, soundVolume + 1);
+                soundManager.playSound(
+                  HEADSHOT_SOUND,
+                  (soundVolume + 1) /
+                    (this.adrenalineEffect * this.adrenalineEffect)
+                );
               }
               enemies[i].looseHp(
                 bulletPower * ENEMIES[enemies[i].type].HEAD_HURT,
@@ -188,7 +276,8 @@ class Player extends Character {
       this.guns[this.usedGun].breakReload(
         soundManager,
         soundVolume,
-        this.usedGun
+        this.usedGun,
+        this.adrenalineEffect
       );
     } else if (soundVolume > 0.0) {
       if (this.guns[this.usedGun].magazineAmmo === 0) {
@@ -197,13 +286,18 @@ class Player extends Character {
           soundManager.playSound(
             PLAYER_GUNS[this.usedGun].ID +
               PLAYER_GUNS[this.usedGun].SOUND_TYPES['trigger'],
-            soundVolume + 0.4
+            (soundVolume + 0.4) /
+              (this.adrenalineEffect * this.adrenalineEffect),
+            false,
+            this.adrenalineEffect
           );
         } else {
           soundManager.playSound(
             PLAYER_GUNS[this.usedGun].ID +
               PLAYER_GUNS[this.usedGun].SOUND_TYPES['empty'],
-            soundVolume
+            soundVolume / (this.adrenalineEffect * this.adrenalineEffect),
+            false,
+            this.adrenalineEffect
           );
         }
       } else {
@@ -211,7 +305,9 @@ class Player extends Character {
         soundManager.playSound(
           PLAYER_GUNS[this.usedGun].ID +
             PLAYER_GUNS[this.usedGun].SOUND_TYPES['trigger'],
-          soundVolume + 0.4
+          (soundVolume + 0.4) / (this.adrenalineEffect * this.adrenalineEffect),
+          false,
+          this.adrenalineEffect
         );
       }
     }
@@ -239,8 +335,18 @@ class Player extends Character {
       directionY = -1;
     }
 
-    const deviatonChance = this.guns[this.usedGun].accuracy * 10;
+    let deviatonChance;
+    if (this.adrenalineEffect > 1) {
+      deviatonChance =
+        this.guns[this.usedGun].accuracy * 10 +
+        (this.adrenalineEffect - 1) * 30;
+    } else {
+      deviatonChance = this.guns[this.usedGun].accuracy * 10;
+    }
+
     for (let i = 0; i < distance; i++) {
+      //a % calculation, if deviation chance bigger than the random num
+      //then there are no deviation
       const haveNotToReachX = Math.random() * 100 + 1;
       if (haveNotToReachX > deviatonChance) {
         const randomDifferenceX = (haveNotToReachX - deviatonChance) / 10;

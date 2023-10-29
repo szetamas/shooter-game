@@ -306,16 +306,20 @@ class Drawer {
   }
 
   drawGui(player, tenthsInGame = 0) {
-    const timeLeft = Math.round(player.hp / player.seriousDamages);
+    const timeLeft = Math.round(
+      player.hp / (player.seriousDamages / player.adrenalineEffect)
+    );
     if (timeLeft < 100) {
       this.drawBleedingTimer(timeLeft, tenthsInGame > 0 ? true : false);
     }
     const playerHp = Math.ceil(player.hp);
     const gunImg = document.getElementById(player.guns[player.usedGun].id);
     const armorImg = document.getElementById('armorLevel' + player.armor.level);
+    const adrenalineImg = document.getElementById('adrenaline');
     //some x modifiaciton if numbers changes
-    const guiHpX = playerHp >= 100 ? 25 : 30;
+    const guiHpX = playerHp >= 100 ? 15 : 20;
     const guiArmorX = player.armor.hp >= 100 ? 25 : 30;
+    const guiAdrenalineX = player.armor.hp >= 100 ? 390 : 360;
     let guiAmmoX = 0;
     if (player.guns[player.usedGun].magazineAmmo < 10) {
       guiAmmoX += 20;
@@ -345,7 +349,7 @@ class Drawer {
         player.guns[player.usedGun].height
       );
       this.drawText(playerHp, guiHpX + PLAYER_HEARTH_WIDTH, 100);
-      this.drawText(player.armor.hp, 200 + guiArmorX + PLAYER_ARMOR_WIDTH, 100);
+      this.drawText(player.armor.hp, 180 + guiArmorX + PLAYER_ARMOR_WIDTH, 100);
       this.canvasContext.drawImage(
         document.getElementById('hearth' + Math.floor(playerHp / 10)),
         5,
@@ -355,11 +359,21 @@ class Drawer {
       );
       this.canvasContext.drawImage(
         armorImg,
-        215,
+        200,
         110 - PLAYER_ARMOR_HEIGHT,
         PLAYER_ARMOR_WIDTH,
         PLAYER_ARMOR_HEIGHT
       );
+      for (let i = 0; i < player.adrenalines; i++) {
+        this.canvasContext.drawImage(
+          adrenalineImg,
+          guiAdrenalineX + i * (ADRENEALINE_WIDTH + 10),
+          110 - ADRENEALINE_HEIGHT,
+          ADRENEALINE_WIDTH,
+          ADRENEALINE_HEIGHT
+        );
+      }
+
       if (this.warningText !== '') {
         this.drawText(this.warningText, 0, 150, 40, true, false, 'center');
       }

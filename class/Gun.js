@@ -27,14 +27,22 @@ class Gun {
     this.reloadingTimeout = null;
   }
 
-  gunShoot(lame = 1) {
+  gunShoot(lame = 1, adrenalineModifier = 1) {
     if (!this.isReloading && this.readyToShoot && this.magazineAmmo > 0) {
       this.readyToShoot = false;
       this.magazineAmmo = this.magazineAmmo - 1;
       const shootCooldown = this.magazineAmmo === 0 ? 200 : 1000;
+      let shootCooldownTime;
+      if (this instanceof PlayerGun) {
+        shootCooldownTime =
+          ((60 / this.fireRate) * shootCooldown) / adrenalineModifier;
+      } else {
+        shootCooldownTime =
+          (60 / this.fireRate) * shootCooldown * adrenalineModifier;
+      }
       window.setTimeout(() => {
         this.readyToShoot = true;
-      }, (60 / this.fireRate) * shootCooldown);
+      }, shootCooldownTime);
       const bulletPower = this.damage * (Math.random() * 1 + 1);
       if (this instanceof EnemyGun && lame !== 1) {
         return bulletPower * (2 - lame);
@@ -46,7 +54,7 @@ class Gun {
     }
   }
 
-  reload(soundManager, volume, usedGun) {
+  reload(soundManager, soundVolume, usedGun, adrenalineModifier = 1) {
     if (this.reloadBreakable && this.isReloading) {
       //BREAKABLE RELOAD
       this.readyToShoot = false;
@@ -55,17 +63,21 @@ class Gun {
         this.allAmmo > this.loadedAmmo &&
         this.magazineAmmo < this.ammoCapacity
       ) {
-        soundManager.playSound(
-          this.id + PLAYER_GUNS[usedGun].SOUND_TYPES['load1'],
-          volume + (volume > 0.0 ? 0.6 : 0.0)
-        );
+        if (soundVolume > 0.0) {
+          soundManager.playSound(
+            this.id + PLAYER_GUNS[usedGun].SOUND_TYPES['load1'],
+            (soundVolume + 0.6) / (adrenalineModifier * adrenalineModifier),
+            false,
+            adrenalineModifier
+          );
+        }
         this.reloadingTimeout = window.setTimeout(() => {
           this.magazineAmmo += this.loadedAmmo;
           this.allAmmo -= this.loadedAmmo;
-          this.reload(soundManager, volume, usedGun);
-        }, this.reloadTime);
+          this.reload(soundManager, soundVolume, usedGun, adrenalineModifier);
+        }, this.reloadTime / adrenalineModifier);
       } else {
-        this.stopReload(soundManager, volume, usedGun);
+        this.stopReload(soundManager, soundVolume, usedGun, adrenalineModifier);
       }
     } else if (
       this.readyToShoot &&
@@ -74,10 +86,14 @@ class Gun {
       this.magazineAmmo < this.ammoCapacity
     ) {
       //CLASSICAL RELOAD
-      soundManager.playSound(
-        this.id + PLAYER_GUNS[usedGun].SOUND_TYPES['reload'],
-        volume + (volume > 0.0 ? 0.6 : 0.0)
-      );
+      if (soundVolume > 0.0) {
+        soundManager.playSound(
+          this.id + PLAYER_GUNS[usedGun].SOUND_TYPES['reload'],
+          (soundVolume + 0.6) / (adrenalineModifier * adrenalineModifier),
+          false,
+          adrenalineModifier
+        );
+      }
       this.readyToShoot = false;
       this.isReloading = true;
       window.setTimeout(() => {
@@ -91,11 +107,11 @@ class Gun {
 
         this.readyToShoot = true;
         this.isReloading = false;
-      }, this.reloadTime);
+      }, this.reloadTime / adrenalineModifier);
     }
   }
 
-  startReload(soundManager, volume, usedGun) {
+  startReload(soundManager, soundVolume, usedGun, adrenalineModifier) {
     if (
       this.reloadBreakable &&
       this.readyToShoot &&
@@ -109,48 +125,60 @@ class Gun {
       this.readyToShoot = false;
       this.isReloading = true;
       if (PLAYER_GUNS[usedGun].RELOAD_START_TIME > 0) {
-        soundManager.playSound(
-          this.id + PLAYER_GUNS[usedGun].SOUND_TYPES['startReload'],
-          volume + (volume > 0.0 ? 0.6 : 0.0)
-        );
+        if (soundVolume > 0.0) {
+          soundManager.playSound(
+            this.id + PLAYER_GUNS[usedGun].SOUND_TYPES['startReload'],
+            (soundVolume + 0.6) / (adrenalineModifier * adrenalineModifier),
+            false,
+            adrenalineModifier
+          );
+        }
         this.reloadingTimeout = window.setTimeout(() => {
-          this.reload(soundManager, volume, usedGun);
-        }, PLAYER_GUNS[usedGun].RELOAD_START_TIME);
+          this.reload(soundManager, soundVolume, usedGun, adrenalineModifier);
+        }, PLAYER_GUNS[usedGun].RELOAD_START_TIME / adrenalineModifier);
       } else {
-        this.reload(soundManager, volume, usedGun);
+        this.reload(soundManager, soundVolume, usedGun, adrenalineModifier);
       }
     }
   }
 
-  breakReload(soundManager, volume, usedGun) {
+  breakReload(soundManager, soundVolume, usedGun, adrenalineModifier) {
     if (this.reloadingTimeout !== null) {
       soundManager.stopSound(
         this.id + PLAYER_GUNS[usedGun].SOUND_TYPES['load1']
       );
-      this.stopReload(soundManager, volume, usedGun);
+      this.stopReload(soundManager, soundVolume, usedGun, adrenalineModifier);
     }
   }
 
-  stopReload(soundManager, volume, usedGun) {
+  stopReload(soundManager, soundVolume, usedGun, adrenalineModifier) {
     window.clearTimeout(this.reloadingTimeout);
     this.isReloading = false;
     if (this.itWasEmpty) {
-      soundManager.playSound(
-        this.id + PLAYER_GUNS[usedGun].SOUND_TYPES['stopEmptyReload'],
-        volume + (volume > 0.0 ? 0.6 : 0.0)
-      );
+      if (soundVolume > 0.0) {
+        soundManager.playSound(
+          this.id + PLAYER_GUNS[usedGun].SOUND_TYPES['stopEmptyReload'],
+          (soundVolume + 0.6) / (adrenalineModifier * adrenalineModifier),
+          false,
+          adrenalineModifier
+        );
+      }
       window.setTimeout(() => {
         this.readyToShoot = true;
-      }, PLAYER_GUNS[usedGun].EMPTY_RELOAD_STOP_TIME);
+      }, PLAYER_GUNS[usedGun].EMPTY_RELOAD_STOP_TIME / adrenalineModifier);
     } else {
       if (PLAYER_GUNS[usedGun].RELOAD_STOP_TIME > 0) {
-        soundManager.playSound(
-          this.id + PLAYER_GUNS[usedGun].SOUND_TYPES['stopReload'],
-          volume + (volume > 0.0 ? 0.6 : 0.0)
-        );
+        if (soundVolume > 0.0) {
+          soundManager.playSound(
+            this.id + PLAYER_GUNS[usedGun].SOUND_TYPES['stopReload'],
+            (soundVolume + 0.6) / (adrenalineModifier * adrenalineModifier),
+            false,
+            adrenalineModifier
+          );
+        }
         window.setTimeout(() => {
           this.readyToShoot = true;
-        }, PLAYER_GUNS[usedGun].RELOAD_STOP_TIME);
+        }, PLAYER_GUNS[usedGun].RELOAD_STOP_TIME / adrenalineModifier);
       } else {
         this.readyToShoot = true;
       }
