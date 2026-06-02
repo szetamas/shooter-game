@@ -28,8 +28,8 @@ const CONTROLS = [
   'Change Gun: Q, 1-2, Wheel Scrolling',
   'Use Adrenaline: E',
 ];
-const TEXT_WIN = "You're winner";
-const TEXT_LOSE = "You're loser";
+const TEXT_WIN = "You Win!";
+const TEXT_LOSE = "You Lose!";
 
 const GUI_BLOODS = [
   { WIDTH: 102 / 1.4, HEIGHT: 176 / 1.4 },
