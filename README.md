@@ -1,20 +1,22 @@
 <h1>shooter-game</h1>
 <p>It is a retro shooter web game, made with vanilla js.</p>
 <p>
-  <a href="http://szetamas.great-site.net/shooter_game/">http://szetamas.great-site.net/shooter_game/</a>
   <h2>
+    PLAY: <a href="http://szetamas.great-site.net/shooter_game/">http://szetamas.great-site.net/shooter_game/</a>
+    <br>
+    <br>
     GAMEPLAY: https://www.youtube.com/watch?v=BS4Uvsmh1M0
   </h2>
+  <h2>Controls:</h2>
+  <ul>
+    <li>Fullscreen: Browser depend (F11)</li>
+    <li>Zoom: Browser depend (Ctrl +-)</li>
+    <li>Shoot: Left Click</li>
+    <li>Reload: R, Wheel Click</li>
+    <li>Change Gun: Q, 1-2, Wheel Scrolling</li>
+  </ul>
 </p>
 <img src="pics/index.png" alt="Game Screenshot0">
-<h2>Controls:</h2>
-<ul>
-  <li>Fullscreen: Browser depend (F11)</li>
-  <li>Zoom: Browser depend (Ctrl +-)</li>
-  <li>Shoot: Left Click</li>
-  <li>Reload: R, Wheel Click</li>
-  <li>Change Gun: Q, 1-2, Wheel Scrolling</li>
-</ul>
 <h3>TODOS:</h3>
 <ul>
   <li>story</li>
